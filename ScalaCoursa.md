@@ -180,6 +180,7 @@ a + b ^? c ?^ d less a ==> b | c
 
 
 #### abstract
+```scala
 abstract class IntSet {
     def incl(x: Int): IntSet
     def contains(x: Int): Boolean
@@ -198,3 +199,126 @@ class NonEmpty(elem: Int, left: IntSet, right: IntSet) extends IntSet {
         else if(x > elem) new NonEmpty(elem, left, right incl x)
         else this
 }
+
+// Have singleton object
+object Empty extends IntSet {
+    def contains(x: Int): Boolean = false
+    def incl(x: Int): IntSet = new NonEmpty(x, Empty, Empty)
+}
+```
+
+
+#### Implements Union Method
+```scala
+abstract class IntSet {
+  def incl(x: Int): IntSet
+  def contains(x: Int): Boolean
+  def union(other: IntSet): IntSet
+}
+
+class Empty extencs IntSet {
+    def contains(x: Int): Boolean = false
+    def incl(x: Int): IntSet = new NonEmpty(x, new Empty, new Empty)
+    override union(other: IntSet): IntSet = other
+}
+
+class NonEmpty(elem: Int, left: IntSet, right: IntSet) extends IntSet {
+    def contains(x: Int): Boolean = 
+        if (x < elem) left contains x
+        else if (x > elem) right contains x
+        else true
+    def incl(x: Int): intSet = 
+        if (x < elem) new NonEmpty(elem, left incl x, right)
+        else if(x > elem) new NonEmpty(elem, left, right incl x)
+        else this
+    override union(other: IntSet): IntSet = {
+        other.map{case (oneNode) => other.incl(oneNode.elem)}
+        other
+    }
+
+// However:
+    override union(other: IntSet): IntSet = 
+        ((left union right) union other) incl elem
+// Because it calls entity at smaller scale, so this recursion must end at somewhere.
+}
+```
+
+#### Dynamic Binding:
+Java scala has dynamic method dispatch.
+Code invoked depends on the run-time type of objects.
+
+eg. Empty contains 1 
+
+
+#### Import:
+```scala
+import week3._
+import week3.rational
+import week3.{rational, something}
+```
+
+Class, Object, traits can inherit one class but arbitrary traits 
+```scala
+class Square extends Shape with Planner with Movalble
+
+// traits can not have parameters, only class can.
+// traits can contains both implementation or just field
+```
+
+#### Exception:
+```
+object scratch{
+    def error(msg :String) = throw new Error(msg) // return type Nothing
+}
+```
+
+#### Type Parameters:
+```scala
+trait List[T]
+class Cons[T](val head: T, val tail: List[T]) extends List[T]
+class Nil[T] extends List[T]
+
+trait List[T]{
+    def isEmpty: Boolean
+    def head: T
+    def tail: List[T]
+}
+
+class Cons[T] (val head: Tm, val tail: List[T]) extends List[T]{
+    def isEmpty = false
+
+}
+class Nil[T] extends List[T] {
+    def isEmpty: Boolean = true
+    def head: Nothing = throw new NoSuchElementExceptions("Nil.head")
+    def tail: Nothing = throw new NoSuchElementExceptions("Nil.tail")
+}
+
+def singleton[T](elem: T) = new Cons[T](elem, new Nil[T])
+// We can then write:
+singleton[Int](1)
+singleton[Boolean](true)
+
+//Type erasure: type only for complier to check. Removed before evaluation.  eg: Java Scala, Haskell, ML, OCaml
+// keep type parameters aroudn at run time, C++ C#, F#
+
+```
+
+#### Polymorphisum:
+subtyping: instances of a subclas can be passed to a base class.
+generics: instances of a function or class are created by type parameterization.
+
+
+```
+// Implements nth number, exced it, throw exception
+
+object nth{
+    def nth[T](n: Int, xs: List[T]): T = 
+        if(xs.isEmpty) throw new IndexOutOfBoundsException
+        else if (n == 0) xs.head
+        else nth(n - 1, xs.tail)
+
+    val list = new Cons(1, new Con(2, new Cons(3, new Nil)))
+}
+
+```
